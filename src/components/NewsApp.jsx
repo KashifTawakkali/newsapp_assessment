@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Button, TextField, Typography, Grid, CircularProgress, Card, CardContent, CardMedia, Pagination } from '@mui/material';
+import { Button, TextField, Typography, Grid, CircularProgress, Card, CardContent, CardMedia, CardActions, Pagination } from '@mui/material';
 
 const Newsapp = () => {
     const [search, setSearch] = useState('india');
@@ -8,30 +8,27 @@ const Newsapp = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 8;
 
-    // Fetch news data from your backend API
     const getData = async () => {
-        setLoading(true); // Set loading state to true when fetching data
+        setLoading(true);
         try {
             const response = await fetch(`http://localhost:3000/api/news?search=${search}`);
             const jsonData = await response.json();
 
-            console.log('API Response:', jsonData); // Check the response structure in the console
-
             if (response.ok) {
-                setNewsData(jsonData || []); // Directly use the fetched data
+                setNewsData(jsonData || []);
             } else {
                 console.error('Error fetching data:', jsonData.message);
             }
         } catch (error) {
             console.error('Network error:', error);
         } finally {
-            setLoading(false); // Set loading to false once data is fetched
+            setLoading(false);
         }
     };
 
     useEffect(() => {
         getData();
-    }, [search]); // Re-run when search term changes
+    }, [search]);
 
     const handleInput = (e) => {
         setSearch(e.target.value);
@@ -45,12 +42,10 @@ const Newsapp = () => {
         setSearch(category);
     };
 
-    // Pagination Logic
     const handlePageChange = (event, value) => {
         setCurrentPage(value);
     };
 
-    // Calculate the current items to display based on the page
     const currentItems = newsData.slice(
         (currentPage - 1) * itemsPerPage,
         currentPage * itemsPerPage
@@ -85,7 +80,6 @@ const Newsapp = () => {
             </nav>
             <Typography variant="h5" align="center" sx={{ marginBottom: '20px' }}>Stay Updated with TrendyNews</Typography>
             
-            {/* Button Category Section */}
             <Grid container justifyContent="center" spacing={2} sx={{ marginBottom: '20px' }}>
                 <Grid item><Button variant="outlined" onClick={() => handleCategoryClick('sports')} sx={buttonStyle}>Sports</Button></Grid>
                 <Grid item><Button variant="outlined" onClick={() => handleCategoryClick('politics')} sx={buttonStyle}>Politics</Button></Grid>
@@ -94,21 +88,20 @@ const Newsapp = () => {
                 <Grid item><Button variant="outlined" onClick={() => handleCategoryClick('fitness')} sx={buttonStyle}>Fitness</Button></Grid>
             </Grid>
 
-            {/* News Cards Section */}
             <div>
                 {loading ? (
                     <Grid container justifyContent="center" alignItems="center" style={{ minHeight: '50vh' }}>
                         <CircularProgress size={60} />
                     </Grid>
                 ) : currentItems.length > 0 ? (
-                    <Grid container spacing={2}>
+                    <Grid container spacing={3}>
                         {currentItems.map((curItem, index) => (
                             <Grid item xs={12} sm={6} md={3} key={index}>
-                                <Card sx={{ maxWidth: '100%' }}>
+                                <Card sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
                                     <CardMedia
                                         component="img"
-                                        height="200"
-                                        image={curItem.image}
+                                        height="140"
+                                        image={curItem.image || 'placeholder-image-url.jpg'} // Fallback image
                                         alt={curItem.title}
                                         loading="lazy"
                                     />
@@ -116,10 +109,20 @@ const Newsapp = () => {
                                         <Typography variant="h6" component="h2" gutterBottom>
                                             {curItem.title}
                                         </Typography>
-                                        <Typography variant="body2" color="text.secondary">
+                                        <Typography variant="body2" color="text.secondary" sx={{ marginBottom: '10px' }}>
                                             {curItem.description}
                                         </Typography>
                                     </CardContent>
+                                    <CardActions sx={{ marginTop: 'auto' }}>
+                                        <Button
+                                            variant="contained"
+                                            color="primary"
+                                            size="small"
+                                            onClick={() => window.open(curItem.url, '_blank')}
+                                        >
+                                            Read More
+                                        </Button>
+                                    </CardActions>
                                 </Card>
                             </Grid>
                         ))}
@@ -129,7 +132,6 @@ const Newsapp = () => {
                 )}
             </div>
 
-            {/* Pagination */}
             <Grid container justifyContent="center" sx={{ marginTop: '20px' }}>
                 <Pagination
                     count={Math.ceil(newsData.length / itemsPerPage)}
@@ -142,7 +144,6 @@ const Newsapp = () => {
     );
 };
 
-// Reusable button style for consistency
 const buttonStyle = {
     borderColor: '#D5006C',
     color: '#D5006C',
